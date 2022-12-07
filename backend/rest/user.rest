@@ -1,0 +1,19 @@
+# get all users
+GET http://localhost:3000/user
+
+###
+# get user by id
+GET http://localhost:3000/user/id/637a82b7ee981dfe45965892
+
+###
+# create user
+POST  http://localhost:3000/user/create
+Content-Type: application/json
+
+{
+    "name": "Vlada"
+}
+
+###
+# delete user
+DELETE  http://localhost:3000/user/delete/id/637a82b7ee981dfe45965892

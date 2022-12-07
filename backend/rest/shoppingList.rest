@@ -1,0 +1,76 @@
+# get all
+GET http://localhost:3000/shoppingList
+
+###
+#  get all my
+GET http://localhost:3000/shoppingList/ownerId/637a7c48b4b3daa67e692f9e
+
+###
+#  get all not my
+GET http://localhost:3000/shoppingList/userId/637a82aeee981dfe4596588e
+
+###
+#  get one my
+GET http://localhost:3000/shoppingList/ownerId/637a7c48b4b3daa67e692f9e/shoppingListId/637a7ca8b4b3daa67e692fa4
+
+###
+#  get one not my
+GET http://localhost:3000/shoppingList/userId/637a82aeee981dfe4596588e/shoppingListId/637a7ca8b4b3daa67e692fa4
+
+###
+# create shopping list
+POST  http://localhost:3000/shoppingList/create
+Content-Type: application/json
+
+{
+    "name": "Honzy nakup",
+    "ownerId": "637a82aeee981dfe4596588e"
+}
+
+###
+# delete shopping list
+DELETE  http://localhost:3000/shoppingList/delete/ownerId/1/shoppingListId/637a95dfb6645be6829936e6
+
+###
+# add item to shopping list
+PATCH http://localhost:3000/shoppingList/addItem
+Content-Type: application/json
+
+{
+    "shoppingListId": "637a7ca8b4b3daa67e692fa4",
+    "ownerId": "637a7c48b4b3daa67e692f9e",
+    "itemId": "637a7c1cb4b3daa67e692f99"
+}
+
+###
+# remove item from shopping list
+PATCH http://localhost:3000/shoppingList/removeItem
+Content-Type: application/json
+
+{
+    "shoppingListId": "637a7ca8b4b3daa67e692fa4",
+    "ownerId": "637a7c48b4b3daa67e692f9e",
+    "itemId": "637a7c1cb4b3daa67e692f99"
+}
+
+###
+# add user to shopping list
+PATCH http://localhost:3000/shoppingList/addUser
+Content-Type: application/json
+
+{
+    "shoppingListId": "637a7ca8b4b3daa67e692fa4",
+    "ownerId": "637a7c48b4b3daa67e692f9e",
+    "userId": "637a82aeee981dfe4596588e"
+}
+
+###
+# remove user from shopping list
+PATCH http://localhost:3000/shoppingList/removeUser
+Content-Type: application/json
+
+{
+    "shoppingListId": "637a7ca8b4b3daa67e692fa4",
+    "ownerId": "637a7c48b4b3daa67e692f9e",
+    "userId": "637a7c48b4b3daa67e692f9e"
+}
