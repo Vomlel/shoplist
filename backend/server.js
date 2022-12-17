@@ -15,7 +15,5 @@ const shoppingListRouter = require('./routes/shoppingList')
 app.use('/shoppingList', shoppingListRouter)
 const userRouter = require('./routes/user')
 app.use('/user', userRouter)
-const itemRouter = require('./routes/item')
-app.use('/item', itemRouter)
 
-app.listen(3001, () => console.log('Server Started'))
+app.listen(3000, () => console.log('Server Started'))

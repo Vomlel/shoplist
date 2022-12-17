@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const ShoppingList = require('../models/shoppingList')
-const Item = require('../models/item')
 const User = require('../models/user')
 
 // get all
@@ -20,7 +19,7 @@ router.get('/ownerId/:ownerId', async (req, res) => {
         const shoppingLists = await ShoppingList.find({ ownerId })
         res.json(shoppingLists)
     } catch {
-        res.status(500).json({ message: err.message })
+        res.status(400).json({ message: err.message })
     }
 })
 // get all not my (user_id)
@@ -30,7 +29,7 @@ router.get('/userId/:userId', async (req, res) => {
         const shoppingLists = await ShoppingList.find({ userId })
         res.json(shoppingLists)
     } catch {
-        res.status(500).json({ message: err.message })
+        res.status(400).json({ message: err.message })
     }
 })
 // get one my (owner_id, shoppingList_id)
@@ -41,7 +40,7 @@ router.get('/ownerId/:ownerId/shoppingListId/:shoppingListId', async (req, res) 
             throw new Error('User id ' + req.params.ownerId + 'is not owner of shopping list id ' + req.params.shoppingListId)
             res.json(shoppingList)
     } catch {
-        res.status(500).json({ message: err.message })
+        res.status(400).json({ message: err.message })
     }
 })
 // get one not my (user_id, shoppingList_id)
@@ -52,7 +51,7 @@ router.get('/userId/:userId/shoppingListId/:shoppingListId', async (req, res) =>
             throw new Error('User id ' + req.params.ownerId + 'is not a viewer of shopping list id ' + req.params.shoppingListId)
             res.json(shoppingList)
     } catch {
-        res.status(500).json({ message: err.message })
+        res.status(400).json({ message: err.message })
     }
 })
 // create (owner_id, name)
@@ -77,7 +76,7 @@ router.delete('/delete/ownerId/:ownerId/shoppingListId/:shoppingListId', async (
         shoppingList.delete()
         res.status(202).message('Shopping list id ' + req.params.shoppingListId + ' was deleted')
     } catch(err) {
-        res.status(500).json({ message: err })
+        res.status(400).json({ message: err })
     }
 })
 // add item
@@ -90,7 +89,7 @@ router.patch('/addItem', async (req, res) => {
         shoppingList.save()
         res.json(shoppingList)
     } catch {
-        res.status(500).json({ message: err })
+        res.status(400).json({ message: err })
     }    
 })
 // remove item
@@ -104,7 +103,7 @@ router.patch('/removeItem/', async (req, res) => {
         shoppingList.save()
         res.json(shoppingList)
     } catch {
-        res.status(500).json({ message: err })
+        res.status(400).json({ message: err })
     }    
 })
 // add user
@@ -117,7 +116,7 @@ router.patch('/addUser/', async (req, res) => {
         shoppingList.save()
         res.json(shoppingList)
     } catch {
-        res.status(500).json({ message: err })
+        res.status(400).json({ message: err })
     }    
 })
 // remove user
@@ -131,7 +130,7 @@ router.patch('/removeUser/', async (req, res) => {
         shoppingList.save()
         res.json(shoppingList)
     } catch {
-        res.status(500).json({ message: err })
+        res.status(400).json({ message: err })
     }    
 })
 

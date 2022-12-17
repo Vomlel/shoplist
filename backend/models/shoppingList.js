@@ -13,10 +13,16 @@ const shoppingListSchema = new mongoose.Schema({
     type: Array,
     required: false
  },
- itemsId: {
-    type: Array,
-    required: false
- }
+ items: [{
+   name: {
+     type: String,
+     required: true
+   },
+   quantity: {
+     type: Number,
+     required: true
+   }
+ }]
 })
 
 module.exports = mongoose.model('ShoppingList', shoppingListSchema)

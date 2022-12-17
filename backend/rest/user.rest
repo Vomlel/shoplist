@@ -3,7 +3,7 @@ GET http://localhost:3000/user
 
 ###
 # get user by id
-GET http://localhost:3000/user/id/637a82b7ee981dfe45965892
+GET http://localhost:3000/user/id/637a82aeee981dfe4596588e
 
 ###
 # create user
@@ -11,9 +11,21 @@ POST  http://localhost:3000/user/create
 Content-Type: application/json
 
 {
-    "name": "Vlada"
+    "name": "John",
+    "password": "1234"
 }
 
 ###
 # delete user
-DELETE  http://localhost:3000/user/delete/id/637a82b7ee981dfe45965892
+DELETE  http://localhost:3000/user/delete/id/639e4f4fa1a701433fc4cebc
+sessionId: 49bwNXWWd5
+
+###
+# login user
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "name": "John",
+    "password": "1234"
+}
