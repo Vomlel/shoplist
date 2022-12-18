@@ -1,6 +1,6 @@
 # get all users
 GET http://localhost:3000/user
-sessionId: hf6kCxlQ1e
+sessionId: keeSSr0zsH
 
 ###
 # get user by id
@@ -12,14 +12,14 @@ POST  http://localhost:3000/user/create
 Content-Type: application/json
 
 {
-    "name": "Jituska",
+    "name": "John",
     "password": "1234"
 }
 
 ###
 # delete user
-DELETE  http://localhost:3000/user/delete/id/639e4f4fa1a701433fc4cebc
-sessionId: 49bwNXWWd5
+DELETE  http://localhost:3000/user/delete/id/639ee8b29244369736621946
+sessionId: 8ASYJaBcRc
 
 ###
 # login user
@@ -30,6 +30,11 @@ Content-Type: application/json
     "name": "Jituska",
     "password": "1234"
 }
+
+###
+# logout user
+DELETE http://localhost:3000/user/logout
+sessionId: 8KI0ex0Ti4
 
 ###
 # update user role
