@@ -130,26 +130,26 @@ router.post('/login', async (req, res) => {
         } else {
             user.password = undefined
             user.__v = undefined
-            res.status(205).json(user)
+            res.status(207).json(user)
         }
     } catch (error) {
         res.status(400).json({ message: error.message })
     }
 })
 // logout
-router.delete('/logout', async (req, res) => {
+router.post('/logout', async (req, res) => {
     try {
-        let { sessionId } = req.headers['sessionid']
-        if ({ sessionId } === undefined || { sessionId } === null) {
+        let sessionId = req.headers['sessionid']
+        if (sessionId === undefined || sessionId === null) {
             res.status(500).json({ message: 'Missing session id.' })
         } else {
-            let user = await User.findOneAndUpdate({ sessionId },
-                { $set: { sessionId: undefined, sessionExpiration: undefined } },
+            let user = await User.findOneAndUpdate({ sessionId: sessionId },
+                { $set: { sessionId: null, sessionExpiration: null } },
                 { new: true })
             if (user == undefined || user === null) {
                 res.status(501).json('Session id is invalid.')
             } else {
-                res.status(205).json('User id ' + user.id + ' was logged out.')
+                res.status(207).json('User id ' + user.id + ' was logged out.')
             }
         }
     } catch(err) {

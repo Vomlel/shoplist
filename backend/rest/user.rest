@@ -12,7 +12,7 @@ POST  http://localhost:3000/user/create
 Content-Type: application/json
 
 {
-    "name": "John",
+    "name": "Jituska",
     "password": "1234"
 }
 
@@ -33,8 +33,8 @@ Content-Type: application/json
 
 ###
 # logout user
-DELETE http://localhost:3000/user/logout
-sessionId: 8KI0ex0Ti4
+POST http://localhost:3000/user/logout
+sessionId: IrsLNU2Sh9
 
 ###
 # update user role
