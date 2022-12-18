@@ -18,7 +18,7 @@ Content-Type: application/json
 
 ###
 # delete user
-DELETE  http://localhost:3000/user/delete/id/639ee8b29244369736621946
+DELETE  http://localhost:3000/user/id/639ee8b29244369736621946
 sessionId: 8ASYJaBcRc
 
 ###
