@@ -1,76 +1,89 @@
-# get all
+###
+# login user
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "name": "John",
+    "password": "1234"
+}
+
+###
+# get all (admin)
 GET http://localhost:3000/shoppingList
+sessionId: hf6kCxlQ1e
 
 ###
 #  get all my
-GET http://localhost:3000/shoppingList/ownerId/637a7c48b4b3daa67e692f9e
+GET http://localhost:3000/shoppingList/owned
+sessionId: kjSOwBUxNa
 
 ###
 #  get all not my
-GET http://localhost:3000/shoppingList/userId/637a82aeee981dfe4596588e
+GET http://localhost:3000/shoppingList/notowned
+sessionId: kjSOwBUxNa
 
 ###
 #  get one my
-GET http://localhost:3000/shoppingList/ownerId/637a7c48b4b3daa67e692f9e/shoppingListId/637a7ca8b4b3daa67e692fa4
-
-###
-#  get one not my
-GET http://localhost:3000/shoppingList/userId/637a82aeee981dfe4596588e/shoppingListId/637a7ca8b4b3daa67e692fa4
+GET http://localhost:3000/shoppingList/shoppingListId/639f00230a5394b45e3bc0ba
+sessionId: kjSOwBUxNa
 
 ###
 # create shopping list
 POST  http://localhost:3000/shoppingList/create
+sessionId: J53WvTvRom
 Content-Type: application/json
 
 {
-    "name": "Honzy nakup",
-    "ownerId": "637a82aeee981dfe4596588e"
+    "name": "Testovaci nakupni listek"
 }
 
 ###
 # delete shopping list
-DELETE  http://localhost:3000/shoppingList/delete/ownerId/1/shoppingListId/637a95dfb6645be6829936e6
+DELETE  http://localhost:3000/shoppingList/shoppingListId/639efa0034f2db425f8f51a2
+sessionId: kjSOwBUxNa
 
 ###
 # add item to shopping list
 PATCH http://localhost:3000/shoppingList/addItem
+sessionId: kjSOwBUxNa
 Content-Type: application/json
 
 {
-    "shoppingListId": "637a7ca8b4b3daa67e692fa4",
-    "ownerId": "637a7c48b4b3daa67e692f9e",
-    "itemId": "637a7c1cb4b3daa67e692f99"
+    "shoppingListId": "639f00230a5394b45e3bc0ba",
+    "name": "jahody",
+    "quantity": 5
 }
 
 ###
 # remove item from shopping list
 PATCH http://localhost:3000/shoppingList/removeItem
+sessionId: kjSOwBUxNa
 Content-Type: application/json
 
 {
-    "shoppingListId": "637a7ca8b4b3daa67e692fa4",
-    "ownerId": "637a7c48b4b3daa67e692f9e",
-    "itemId": "637a7c1cb4b3daa67e692f99"
+    "shoppingListId": "639f00230a5394b45e3bc0ba",
+    "itemId": "639f04c5ad32c3db76975e66"
 }
 
 ###
 # add user to shopping list
 PATCH http://localhost:3000/shoppingList/addUser
+sessionId: kjSOwBUxNa
 Content-Type: application/json
 
 {
-    "shoppingListId": "637a7ca8b4b3daa67e692fa4",
-    "ownerId": "637a7c48b4b3daa67e692f9e",
-    "userId": "637a82aeee981dfe4596588e"
+    "shoppingListId": "639f00230a5394b45e3bc0ba",
+    "userId": "639ee49e1fed8a3a8faa5195"
 }
 
 ###
 # remove user from shopping list
 PATCH http://localhost:3000/shoppingList/removeUser
+sessionId: kjSOwBUxNa
 Content-Type: application/json
 
 {
-    "shoppingListId": "637a7ca8b4b3daa67e692fa4",
-    "ownerId": "637a7c48b4b3daa67e692f9e",
-    "userId": "637a7c48b4b3daa67e692f9e"
+    "shoppingListId": "639f00230a5394b45e3bc0ba",
+    "userId": "639ee49e1fed8a3a8faa5195"
 }

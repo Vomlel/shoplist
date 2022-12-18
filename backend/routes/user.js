@@ -1,21 +1,28 @@
 const express = require('express')
 const router = express.Router()
 const User = require('../models/user')
-const validateUser = require('../Validators/userValidate')
 
 // get all
 router.get('/', async (req, res) => {
     try {
-        const users = await User.find()
-        for (let i = 0; i < users.length; i++) {
-            users[i].password = undefined
-            users[i].sessionId = undefined
-            users[i].sessionExpiration = undefined
-            users[i].__v = undefined
+        let sessionId = req.headers['sessionid']
+        if (sessionId === undefined || sessionId === null) {
+            res.status(500).json({ message: 'Missing session id.' })
+        } else {
+            let adminUser = await User.findOneAndUpdate({ sessionId },
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (adminUser === undefined ||  adminUser === null) {
+                res.status(501).json('Session id is invalid.')
+            } else if (adminUser.role !== 'admin') {
+                res.status(502).json('Logged user is not an admin.')
+            } else {
+                const user = await User.find()
+                res.json(user)
+            }
         }
-        res.json(users)
     } catch {
-        res.status(500).json({ message: err.message })
+        res.status(400).json({ message: err.message })
     }
 })
 // get by id
@@ -32,7 +39,7 @@ router.get('/id/:id', async (req, res) => {
         }
         res.json(user)
     } catch {
-        res.status(500).json({ message: err.message })
+        res.status(400).json({ message: err.message })
     }
 })
 // create
@@ -40,6 +47,7 @@ router.post('/create', async (req, res) => {
     const user = new User({
         name: req.body.name,
         password:  req.body.password,
+        role: "shopper",
     })
     try {
         const newUser = await user.save()
@@ -85,6 +93,30 @@ router.delete('/delete/id/:id', async (req, res) => {
                     console.log(sessionId)
                     res.status(502).json('Session id is invalid or expired. Please login again.')
                 }
+        }
+    } catch(err) {
+        res.status(400).json({ message: err.message })
+    }
+})
+// update role
+router.put('/role/:role/id/:id', async (req, res) => {
+    try {
+        let id = req.params.id
+        let role = req.params.role
+        let {sessionId} = req.headers['sessionid']
+        if (sessionId === undefined) {
+            res.status(501).json('Missing session id')
+        } else {
+            let adminUser = await User.findOneAndUpdate({sessionId},
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (adminUser === null || adminUser.role !== 'admin') {
+                res.status(500).json('User id ' + adminUser.id + ' does not exist')
+            } else {
+                await User.findOneAndUpdate({id},
+                    { $set: { role: role } },
+                    { new: true })
+            }
         }
     } catch(err) {
         res.status(400).json({ message: err.message })

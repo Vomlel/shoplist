@@ -1,5 +1,6 @@
 # get all users
 GET http://localhost:3000/user
+sessionId: hf6kCxlQ1e
 
 ###
 # get user by id
@@ -11,7 +12,7 @@ POST  http://localhost:3000/user/create
 Content-Type: application/json
 
 {
-    "name": "John",
+    "name": "Jituska",
     "password": "1234"
 }
 
@@ -26,6 +27,11 @@ POST  http://localhost:3000/user/login
 Content-Type: application/json
 
 {
-    "name": "John",
+    "name": "Jituska",
     "password": "1234"
 }
+
+###
+# update user role
+PUT  http://localhost:3000/user/role/admin/id/639ee8b29244369736621946
+sessionId: z2kzw73HxR

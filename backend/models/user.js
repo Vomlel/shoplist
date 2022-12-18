@@ -16,6 +16,10 @@ const userSchema = new mongoose.Schema({
   sessionExpiration: {
     type: Date,
     required: false
+  },
+  role: {
+    type: String,
+    required: true
   }
 });
 

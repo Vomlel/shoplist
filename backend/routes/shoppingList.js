@@ -3,135 +3,304 @@ const router = express.Router()
 const ShoppingList = require('../models/shoppingList')
 const User = require('../models/user')
 
-// get all
+// get all (admin)
 router.get('/', async (req, res) => {
     try {
-        const shoppingLists = await ShoppingList.find()
-        res.json(shoppingLists)
+        let sessionId = req.headers['sessionid']
+        if (!sessionId) {
+            res.status(500).json({ message: 'Missing session id.' })
+        } else {
+            let adminUser = await User.findOneAndUpdate({ sessionId },
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (adminUser == undefined || adminUser === null) {
+                res.status(501).json('Session id is invalid. Please login.')
+                res.redirect('/login')
+            } else if (adminUser.role !== 'admin') {
+                res.status(501).json('Logged user is not an admin.')
+            } else {
+                const shoppingLists = await ShoppingList.find()
+                res.json(shoppingLists)
+            }
+        }
     } catch {
-        res.status(500).json({ message: err.message })
+        res.status(400).json({ message: err.message })
     }
 })
 // get all my (owner_id)
-router.get('/ownerId/:ownerId', async (req, res) => {
+router.get('/owned', async (req, res) => {
     try {
-        const { ownerId } = req.params
-        const shoppingLists = await ShoppingList.find({ ownerId })
-        res.json(shoppingLists)
+        let sessionId = req.headers['sessionid']
+        if (!sessionId) {
+            res.status(500).json({ message: 'Missing session id.' })
+        } else {
+            let user = await User.findOneAndUpdate({ sessionId },
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (user == undefined || user === null) {
+                res.status(501).json('Session id is invalid. Please login.')
+                res.redirect('/login')
+            } else {
+                let shoppingLists = await ShoppingList.find({ ownerId: user.id })
+                shoppingLists.forEach(shoppingList => {
+                    shoppingList.ownerId = undefined
+                    shoppingList.__v = undefined
+                })
+                res.json(shoppingLists)
+            }
+        }
     } catch {
         res.status(400).json({ message: err.message })
     }
 })
 // get all not my (user_id)
-router.get('/userId/:userId', async (req, res) => {
+router.get('/notowned', async (req, res) => {
     try {
-        const { userId } = req.params
-        const shoppingLists = await ShoppingList.find({ userId })
-        res.json(shoppingLists)
+        let sessionId = req.headers['sessionid']
+        if (!sessionId) {
+            res.status(500).json({ message: 'Missing session id.' })
+        } else {
+            let user = await User.findOneAndUpdate({ sessionId },
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (user == undefined || user === null) {
+                res.status(501).json('Session id is invalid. Please login.')
+                res.redirect('/login')
+            } else {
+                const shoppingLists = await ShoppingList.find({ usersId: user.id })
+                res.json(shoppingLists)
+            }
+        }
     } catch {
         res.status(400).json({ message: err.message })
     }
 })
-// get one my (owner_id, shoppingList_id)
-router.get('/ownerId/:ownerId/shoppingListId/:shoppingListId', async (req, res) => {
+// get one (owner_id, shoppingList_id)
+router.get('/shoppingListId/:shoppingListId', async (req, res) => {
     try {
-        const shoppingList = await ShoppingList.findById(req.params.shoppingListId)
-        if (!shoppingList.$isEmpty && shoppingList.ownerId !== req.params.ownerId) 
-            throw new Error('User id ' + req.params.ownerId + 'is not owner of shopping list id ' + req.params.shoppingListId)
-            res.json(shoppingList)
-    } catch {
-        res.status(400).json({ message: err.message })
-    }
-})
-// get one not my (user_id, shoppingList_id)
-router.get('/userId/:userId/shoppingListId/:shoppingListId', async (req, res) => {
-    try {
-        const shoppingList = await ShoppingList.findById(req.params.shoppingListId)
-        if (!shoppingList.$isEmpty && !shoppingList.usersId.includes(req.params.userId)) 
-            throw new Error('User id ' + req.params.ownerId + 'is not a viewer of shopping list id ' + req.params.shoppingListId)
-            res.json(shoppingList)
+        let sessionId = req.headers['sessionid']
+        if (!sessionId) {
+            res.status(500).json({ message: 'Missing session id.' })
+        } else {
+            let user = await User.findOneAndUpdate({ sessionId },
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (user == undefined || user === null) {
+                res.status(501).json('Session id is invalid. Please login.')
+                res.redirect('/login')
+            } else {
+                const shoppingList = await ShoppingList.findById(req.params.shoppingListId)
+                if (shoppingList == undefined || shoppingList === null) {
+                    res.status(502).json('Shopping list id is invalid.')
+                } else if (shoppingList.ownerId === user.id || shoppingList.usersId.includes(user.id)) {
+                    res.status(200).json(shoppingList)
+                } else {
+                    res.status(503).json('User id ' + user.id + 'is not owner or user of shopping list id ' + req.params.shoppingListId)
+                }
+            }
+        }
     } catch {
         res.status(400).json({ message: err.message })
     }
 })
 // create (owner_id, name)
 router.post('/create', async (req, res) => {
-    const shoppingList = new ShoppingList({
-        name: req.body.name,
-        ownerId: req.body.ownerId
-    })
     try {
-        const newShoppingList = await shoppingList.save()
-        res.status(201).json(newShoppingList)
+        let sessionId = req.headers['sessionid']
+        if (!sessionId) {
+            res.status(500).json({ message: 'Missing session id. Please login.' })
+            res.redirect('/login')
+        } else {
+            let user = await User.findOneAndUpdate({ sessionId },
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (user == undefined || user === null) {
+                res.status(501).json('Session id is invalid. Please login.')
+                res.redirect('/login')
+            } else {
+                const shoppingList = new ShoppingList({
+                    name: req.body.name,
+                    ownerId: user.id
+                })
+                    const newShoppingList = await shoppingList.save()
+                    res.status(201).json(newShoppingList)
+            }
+        }
     } catch (error) {
         res.status(400).json({ message: error.message })
     }
 })
 // delete (owner_id, shoppingList_id)
-router.delete('/delete/ownerId/:ownerId/shoppingListId/:shoppingListId', async (req, res) => {
+router.delete('/shoppingListId/:shoppingListId', async (req, res) => {
     try {
-        const shoppingList = await ShoppingList.findById(req.params.shoppingListId)
-        if (!shoppingList.$isEmpty && shoppingList.ownerId !== req.params.ownerId) 
-            throw new Error('User id ' + req.params.ownerId + 'is not owner of shopping list id ' + req.params.shoppingListId)
-        shoppingList.delete()
-        res.status(202).message('Shopping list id ' + req.params.shoppingListId + ' was deleted')
-    } catch(err) {
-        res.status(400).json({ message: err })
+        let sessionId = req.headers['sessionid']
+        if (!sessionId) {
+            res.status(500).json({ message: 'Missing session id. Please login.' })
+            res.redirect('/login')
+        } else {
+            let user = await User.findOneAndUpdate({ sessionId },
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (user == undefined || user === null) {
+                res.status(501).json('Session id is invalid. Please login.')
+                res.redirect('/login')
+            } else {
+                const shoppingList = await ShoppingList.findById(req.params.shoppingListId)
+                if (shoppingList == undefined || shoppingList === null) {
+                    res.status(502).json('Shopping list id is invalid.')
+                } else if (shoppingList.ownerId === user.id) {
+                    shoppingList.delete()
+                    res.status(202).json('Shopping list id ' + req.params.shoppingListId + ' was deleted')
+                } else {
+                    res.status(503).json('User id ' + user.id + 'is not owner of shopping list id ' + req.params.shoppingListId)
+                }
+            }
+        }
+    } catch (error) {
+        res.status(400).json({ message: error.message })
     }
 })
 // add item
 router.patch('/addItem', async (req, res) => {
     try {
-        const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
-        if (!shoppingList.$isEmpty && shoppingList.ownerId !== req.body.ownerId) 
-                throw new Error('User id ' + req.body.ownerId + 'is not owner of shopping list id ' + req.body.shoppingListId)
-        shoppingList.itemsId.push(req.body.itemId)
-        shoppingList.save()
-        res.json(shoppingList)
-    } catch {
-        res.status(400).json({ message: err })
-    }    
+        let sessionId = req.headers['sessionid']
+        if (!sessionId) {
+            res.status(500).json({ message: 'Missing session id. Please login.' })
+            res.redirect('/login')
+        } else {
+            let user = await User.findOneAndUpdate({ sessionId },
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (user == undefined || user === null) {
+                res.status(501).json('Session id is invalid. Please login.')
+                res.redirect('/login')
+            } else {
+                const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
+                if (shoppingList == undefined || shoppingList === null) {
+                    res.status(502).json('Shopping list id is invalid.')
+                } else if (shoppingList.ownerId === user.id || shoppingList.usersId.includes(user.id)) {
+                    let item = {name: req.body.name, quantity: req.body.quantity}
+                    shoppingList.items.push(item)
+                    shoppingList.save()
+                    res.status(200).json(shoppingList)
+                } else {
+                    res.status(503).json('User id ' + user.id + 'is not owner or user of shopping list id ' + req.params.shoppingListId)
+                }
+            }
+        }
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
 })
 // remove item
-router.patch('/removeItem/', async (req, res) => {
+router.patch('/removeItem', async (req, res) => {
     try {
-        const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
-        if (!shoppingList.$isEmpty && shoppingList.ownerId !== req.body.ownerId) 
-                throw new Error('User id ' + req.body.ownerId + 'is not owner of shopping list id ' + req.body.shoppingListId)
-        const index = shoppingList.itemsId.indexOf(req.body.itemId)
-        shoppingList.itemsId.splice(index, 1)
-        shoppingList.save()
-        res.json(shoppingList)
-    } catch {
-        res.status(400).json({ message: err })
-    }    
+        let sessionId = req.headers['sessionid']
+        if (!sessionId) {
+            res.status(500).json({ message: 'Missing session id. Please login.' })
+            res.redirect('/login')
+        } else {
+            let user = await User.findOneAndUpdate({ sessionId },
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (user == undefined || user === null) {
+                res.status(501).json('Session id is invalid. Please login.')
+                res.redirect('/login')
+            } else {
+                const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
+                if (shoppingList == undefined || shoppingList === null) {
+                    res.status(502).json('Shopping list id is invalid.')
+                } else if (shoppingList.ownerId === user.id || shoppingList.usersId.includes(user.id)) {
+                    if (req.body.itemId === undefined || req.body.itemId === null) {
+                        res.status(504).json('Item id is missing in request.')
+                    } else if (shoppingList.items.id(req.body.itemId) === undefined || shoppingList.items.id(req.body.itemId) === null) {
+                        res.status(505).json('Item id is invalid.')
+                    } else {
+                        shoppingList.items.id(req.body.itemId).remove()
+                        shoppingList.save()
+                        res.status(200).json(shoppingList)
+                    }
+                } else {
+                    res.status(503).json('User id ' + user.id + 'is not owner or user of shopping list id ' + req.params.shoppingListId)
+                }
+            }
+        }
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    } 
 })
 // add user
-router.patch('/addUser/', async (req, res) => {
+router.patch('/addUser', async (req, res) => {
     try {
-        const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
-        if (!shoppingList.$isEmpty && shoppingList.ownerId !== req.body.ownerId) 
-                throw new Error('User id ' + req.body.ownerId + 'is not owner of shopping list id ' + req.body.shoppingListId)
-        shoppingList.usersId.push(req.body.userId)
-        shoppingList.save()
-        res.json(shoppingList)
-    } catch {
-        res.status(400).json({ message: err })
-    }    
+        let sessionId = req.headers['sessionid']
+        if (!sessionId) {
+            res.status(500).json({ message: 'Missing session id. Please login.' })
+            res.redirect('/login')
+        } else {
+            let user = await User.findOneAndUpdate({ sessionId },
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (user == undefined || user === null) {
+                res.status(501).json('Session id is invalid. Please login.')
+                res.redirect('/login')
+            } else {
+                const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
+                if (shoppingList == undefined || shoppingList === null) {
+                    res.status(502).json('Shopping list id is invalid.')
+                } else if (shoppingList.ownerId === user.id) {
+                    const userToAdd = await User.findById(req.body.userId)
+                    if (userToAdd == undefined || userToAdd === null) {
+                        res.status(506).json('User id ' + req.body.userId + ' does not exist.')
+                    } else {
+                        shoppingList.usersId.push(req.body.userId)
+                        shoppingList.save()
+                        res.status(200).json(shoppingList)
+                    }
+                } else {
+                    res.status(503).json('User id ' + user.id + 'is not owner of shopping list id ' + req.params.shoppingListId)
+                }
+            }
+        }
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
 })
 // remove user
-router.patch('/removeUser/', async (req, res) => {
+router.patch('/removeUser', async (req, res) => {
     try {
-        const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
-        if (!shoppingList.$isEmpty && shoppingList.ownerId !== req.body.ownerId) 
-                throw new Error('User id ' + req.body.ownerId + 'is not owner of shopping list id ' + req.body.shoppingListId)
-        const index = shoppingList.itemsId.indexOf(req.body.userId)
-        shoppingList.usersId.splice(index, 1)
-        shoppingList.save()
-        res.json(shoppingList)
-    } catch {
-        res.status(400).json({ message: err })
-    }    
+        let sessionId = req.headers['sessionid']
+        if (!sessionId) {
+            res.status(500).json({ message: 'Missing session id. Please login.' })
+            res.redirect('/login')
+        } else {
+            let user = await User.findOneAndUpdate({ sessionId },
+                { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
+                { new: true })
+            if (user == undefined || user === null) {
+                res.status(501).json('Session id is invalid. Please login.')
+                res.redirect('/login')
+            } else {
+                const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
+                if (shoppingList == undefined || shoppingList === null) {
+                    res.status(502).json('Shopping list id is invalid.')
+                } else if (shoppingList.ownerId === user.id) {
+                    const index = shoppingList.usersId.indexOf(req.body.userId)
+                    shoppingList.usersId.splice(index, 1)
+                    shoppingList.save()
+                    console.log(index)
+                    res.status(202).json(shoppingList)
+                } else {
+                    res.status(503).json('User id ' + user.id + 'is not owner of shopping list id ' + req.params.shoppingListId)
+                }
+            }
+        }
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    } 
 })
+
+function addMinutes(date, minutes) {
+    return new Date(date.getTime() + minutes*60000);
+}
 
 module.exports = router
