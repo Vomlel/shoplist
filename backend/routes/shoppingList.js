@@ -88,7 +88,7 @@ router.get('/shoppingListId/:shoppingListId', async (req, res) => {
                 const shoppingList = await ShoppingList.findById(req.params.shoppingListId)
                 if (shoppingList == undefined || shoppingList === null) {
                     res.status(501).json('Shopping list id is invalid.')
-                } else if (shoppingList.ownerId === user.id || shoppingList.usersId.includes(user.id)) {
+                } else if (shoppingList.ownerId === user.id || shoppingList.usersId.includes(user.id) || user.role === 'admin') {
                     res.status(200).json(shoppingList)
                 } else {
                     res.status(502).json('User id ' + user.id + 'is not owner or user of shopping list id ' + req.params.shoppingListId)
@@ -171,7 +171,7 @@ router.patch('/addItem', async (req, res) => {
                 const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
                 if (shoppingList == undefined || shoppingList === null) {
                     res.status(501).json('Shopping list id is invalid.')
-                } else if (shoppingList.ownerId === user.id || shoppingList.usersId.includes(user.id)) {
+                } else if (shoppingList.ownerId === user.id || shoppingList.usersId.includes(user.id) || user.role === 'admin') {
                     let item = {name: req.body.name, quantity: req.body.quantity}
                     shoppingList.items.push(item)
                     shoppingList.save()
@@ -201,7 +201,7 @@ router.patch('/removeItem', async (req, res) => {
                 const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
                 if (shoppingList == undefined || shoppingList === null) {
                     res.status(501).json('Shopping list id is invalid.')
-                } else if (shoppingList.ownerId === user.id || shoppingList.usersId.includes(user.id)) {
+                } else if (shoppingList.ownerId === user.id || shoppingList.usersId.includes(user.id) || user.role === 'admin') {
                     if (req.body.itemId === undefined || req.body.itemId === null) {
                         res.status(500).json('Item id is missing in request.')
                     } else if (shoppingList.items.id(req.body.itemId) === undefined || shoppingList.items.id(req.body.itemId) === null) {
@@ -209,7 +209,8 @@ router.patch('/removeItem', async (req, res) => {
                     } else {
                         shoppingList.items.id(req.body.itemId).remove()
                         shoppingList.save()
-                        res.status(204).json(shoppingList)
+                        console.log(shoppingList)
+                        res.status(208).json(shoppingList)
                     }
                 } else {
                     res.status(502).json('User id ' + user.id + 'is not owner or user of shopping list id ' + req.params.shoppingListId)
@@ -236,14 +237,18 @@ router.patch('/addUser', async (req, res) => {
                 const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
                 if (shoppingList == undefined || shoppingList === null) {
                     res.status(501).json('Shopping list id is invalid.')
-                } else if (shoppingList.ownerId === user.id) {
+                } else if (shoppingList.ownerId === user.id || user.role === 'admin') {
                     const userToAdd = await User.findById(req.body.userId)
                     if (userToAdd == undefined || userToAdd === null) {
                         res.status(501).json('User id ' + req.body.userId + ' does not exist.')
                     } else {
-                        shoppingList.usersId.push(req.body.userId)
-                        shoppingList.save()
-                        res.status(203).json(shoppingList)
+                        if (shoppingList.usersId.includes(req.body.userId)) {
+                            res.status(504).json('User id ' + req.body.userId + ' is already in shopping list id ' + shoppingList.id)
+                        } else {
+                            shoppingList.usersId.push(req.body.userId)
+                            shoppingList.save()
+                            res.status(203).json(shoppingList)
+                        }
                     }
                 } else {
                     res.status(502).json('User id ' + user.id + 'is not owner of shopping list id ' + req.params.shoppingListId)
@@ -270,12 +275,11 @@ router.patch('/removeUser', async (req, res) => {
                 const shoppingList = await ShoppingList.findById(req.body.shoppingListId)
                 if (shoppingList == undefined || shoppingList === null) {
                     res.status(501).json('Shopping list id is invalid.')
-                } else if (shoppingList.ownerId === user.id) {
+                } else if (shoppingList.ownerId === user.id || user.role === 'admin') {
                     const index = shoppingList.usersId.indexOf(req.body.userId)
                     shoppingList.usersId.splice(index, 1)
                     shoppingList.save()
-                    console.log(index)
-                    res.status(204).json(shoppingList)
+                    res.status(208).json(shoppingList)
                 } else {
                     res.status(502).json('User id ' + user.id + 'is not owner of shopping list id ' + req.params.shoppingListId)
                 }

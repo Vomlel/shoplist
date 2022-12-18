@@ -73,7 +73,7 @@ router.post('/create', async (req, res) => {
     }
 })
 // delete
-router.delete('/delete/id/:id', async (req, res) => {
+router.delete('/id/:id', async (req, res) => {
     try {
         let id = req.params.id
         let sessionId = req.headers['sessionid']
@@ -161,15 +161,17 @@ router.put('/role/:role/id/:id', async (req, res) => {
     try {
         let id = req.params.id
         let role = req.params.role
-        let {sessionId} = req.headers['sessionid']
+        let sessionId = req.headers['sessionid']
         if (sessionId === undefined) {
-            res.status(501).json('Missing session id')
+            res.status(500).json('Missing session id. Please login.')
         } else {
-            let adminUser = await User.findOneAndUpdate({sessionId},
+            let adminUser = await User.findOneAndUpdate({sessionId: sessionId},
                 { $set: { sessionExpiration: addMinutes(new Date(), 30) } },
                 { new: true })
-            if (adminUser === null || adminUser.role !== 'admin') {
-                res.status(501).json('User id ' + adminUser.id + ' does not exist')
+            if (adminUser === null) {
+                res.status(501).json('Session id is invalid or expired. Please login.')
+            } else if (adminUser.role !== 'admin') {
+                res.status(502).json('User id ' + adminUser.id + ' is not an admin')
             } else {
                 await User.findOneAndUpdate({id},
                     { $set: { role: role } },
