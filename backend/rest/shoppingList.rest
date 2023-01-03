@@ -11,12 +11,12 @@ Content-Type: application/json
 ###
 # get all (admin)
 GET http://localhost:3000/shoppingList
-sessionId: keeSSr0zsH
+sessionId: eCQNYfOCNK
 
 ###
 #  get all my
 GET http://localhost:3000/shoppingList/owned
-sessionId: kjSOwBUxNa
+sessionId: eCQNYfOCNK
 
 ###
 #  get all not my
@@ -31,7 +31,7 @@ sessionId: kjSOwBUxNa
 ###
 # create shopping list
 POST  http://localhost:3000/shoppingList/create
-sessionId: J53WvTvRom
+sessionId: eCQNYfOCNK
 Content-Type: application/json
 
 {
@@ -46,11 +46,11 @@ sessionId: kjSOwBUxNa
 ###
 # add item to shopping list
 PATCH http://localhost:3000/shoppingList/addItem
-sessionId: kjSOwBUxNa
+sessionId: eCQNYfOCNK
 Content-Type: application/json
 
 {
-    "shoppingListId": "639f00230a5394b45e3bc0ba",
+    "shoppingListId": "63b3832cd57e68bf284dbcdd",
     "name": "jahody",
     "quantity": 5
 }
